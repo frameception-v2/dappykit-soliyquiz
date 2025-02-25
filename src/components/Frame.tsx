@@ -22,17 +22,22 @@ import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
 import { PROJECT_TITLE } from "~/lib/constants";
 
-function ExampleCard() {
+function QuizCard({ onStart }: { onStart: () => void }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome to the Frame Template</CardTitle>
+        <CardTitle>Welcome to the Quiz!</CardTitle>
         <CardDescription>
-          This is an example card that you can customize or remove
+          Test your knowledge with our interactive quiz
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Label>Place content in a Card here.</Label>
+      <CardContent className="flex flex-col items-center">
+        <button
+          onClick={onStart}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          Start Quiz
+        </button>
       </CardContent>
     </Card>
   );
@@ -140,7 +145,7 @@ export default function Frame() {
         <h1 className="text-2xl font-bold text-center mb-4 text-gray-700 dark:text-gray-300">
           {PROJECT_TITLE}
         </h1>
-        <ExampleCard />
+        <QuizCard onStart={() => console.log("Quiz started!")} />
       </div>
     </div>
   );
