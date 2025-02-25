@@ -22,22 +22,67 @@ import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
 import { PROJECT_TITLE } from "~/lib/constants";
 
-function QuizCard({ onStart }: { onStart: () => void }) {
+function QuizCard({ 
+  quizState, 
+  onStart, 
+  onAnswer 
+}: { 
+  quizState?: QuizState;
+  onStart: () => void;
+  onAnswer: (answerIndex: number) => void;
+}) {
+  if (!quizState || quizState.currentQuestion === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Welcome to the Quiz!</CardTitle>
+          <CardDescription>
+            Test your knowledge with our interactive quiz
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center">
+          <button
+            onClick={onStart}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Start Quiz
+          </button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (quizState.isComplete) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Quiz Complete!</CardTitle>
+          <CardDescription>
+            You scored {quizState.score} out of {questions.length}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  const currentQuestion = questions[quizState.currentQuestion - 1];
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome to the Quiz!</CardTitle>
-        <CardDescription>
-          Test your knowledge with our interactive quiz
-        </CardDescription>
+        <CardTitle>Question {quizState.currentQuestion}</CardTitle>
+        <CardDescription>{currentQuestion.question}</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col items-center">
-        <button
-          onClick={onStart}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-        >
-          Start Quiz
-        </button>
+      <CardContent className="flex flex-col gap-2">
+        {currentQuestion.options.map((option, index) => (
+          <button
+            key={index}
+            onClick={() => onAnswer(index)}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            {option}
+          </button>
+        ))}
       </CardContent>
     </Card>
   );
@@ -46,6 +91,7 @@ function QuizCard({ onStart }: { onStart: () => void }) {
 export default function Frame() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
+  const [quizState, setQuizState] = useState<QuizState>(initialQuizState);
 
   const [added, setAdded] = useState(false);
 
@@ -145,7 +191,26 @@ export default function Frame() {
         <h1 className="text-2xl font-bold text-center mb-4 text-gray-700 dark:text-gray-300">
           {PROJECT_TITLE}
         </h1>
-        <QuizCard onStart={() => console.log("Quiz started!")} />
+        <QuizCard 
+          quizState={quizState}
+          onStart={() => {
+            setQuizState(prev => ({
+              ...prev,
+              currentQuestion: 1
+            }));
+          }}
+          onAnswer={(answerIndex) => {
+            const currentQuestion = questions[quizState.currentQuestion - 1];
+            const isCorrect = answerIndex === currentQuestion.correctAnswer;
+            
+            setQuizState(prev => ({
+              ...prev,
+              score: isCorrect ? prev.score + 1 : prev.score,
+              currentQuestion: prev.currentQuestion + 1,
+              isComplete: prev.currentQuestion >= questions.length
+            }));
+          }}
+        />
       </div>
     </div>
   );
